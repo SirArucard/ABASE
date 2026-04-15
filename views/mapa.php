@@ -1,128 +1,248 @@
 <?php
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
+session_start();
+if (!isset($_SESSION['id_usuario'])) {
+    header("Location: ../index.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
-    <title>ABase - Mapa</title>
+    <title>Mapa - ABase</title>
 
-    <!-- CSS do projeto -->
     <link rel="stylesheet" href="../assets/css/style.css">
-
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
-<body>
+<body class="mapa-page">
 
-<header>
-    ABase - Onde todo Rolê começa!
-</header>
+<div class="map-container">
 
-<div class="container">
+    <div class="topo">
+<div class="topo-header">
+    <button onclick="window.location.href='perfil.php'" class="btn-voltar" title="Voltar">
+    ←
+</button>
 
     <h2>Eventos Próximos</h2>
+</div>
+    <div class="filtro">
+        <div class="input-local">
+            <input type="text" id="localizacao" placeholder="Digite sua localização">
+            <div id="sugestoes"></div>
+        </div>
 
-    <label>Raio (km):</label>
-    <input type="number" id="raio" value="50">
+        <input type="number" id="raio" placeholder="km" value="10">
+        <button onclick="buscarLocalizacao()">Buscar</button>
+    </div>
 
-    <button onclick="carregarMapa()">Buscar</button>
+    <button onclick="toggleMapa()" class="btn-mapa">🗺 Mostrar mapa</button>
 
 </div>
 
-<div id="map"></div>
+    <!-- LISTA -->
+    <div id="lista-eventos"></div>
 
-<!-- Leaflet JS -->
+    <!-- MAPA -->
+    <div id="map" class="hidden"></div>
+
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
+let map;
+let userLat;
+let userLong;
+let markers = [];
+let userMarker;
+let mapaVisivel = false;
+let timeout = null;
 
-function carregarMapa() {
+// inicializa depois que carregar DOM
+window.onload = function() {
 
-    let raio = document.getElementById("raio").value;
-
+    // pega localização inicial
     navigator.geolocation.getCurrentPosition(function(position) {
+        userLat = position.coords.latitude;
+        userLong = position.coords.longitude;
 
-        let lat = position.coords.latitude;
-        let long = position.coords.longitude;
+        carregarEventos();
+    });
 
-        // remove mapa antigo
-        if (window.mapa) {
-            window.mapa.remove();
+    // autocomplete
+    document.getElementById("localizacao").addEventListener("input", function() {
+
+        clearTimeout(timeout);
+
+        let query = this.value;
+
+        if (query.length < 3) {
+            document.getElementById("sugestoes").innerHTML = "";
+            return;
         }
 
-        var map = L.map('map').setView([lat, long], 13);
-        window.mapa = map;
+        timeout = setTimeout(() => {
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
+            .then(res => res.json())
+            .then(data => {
 
-        // marcador do usuário
-        L.marker([lat, long]).addTo(map)
-            .bindPopup("📍 Você está aqui!")
-            .openPopup();
+                let sugestoes = document.getElementById("sugestoes");
+                sugestoes.innerHTML = "";
 
-        // buscar eventos
-        fetch(`../controllers/buscar_eventos.php?lat=${lat}&long=${long}&raio=${raio}`)
-        .then(response => response.json())
-        .then(data => {
+                data.slice(0, 5).forEach(local => {
 
-            data.forEach(evento => {
+                    let item = document.createElement("div");
+                    let nomeCurto = local.display_name.split(",").slice(0, 3).join(",");
 
-                L.marker([evento.latitude_local, evento.longitude_local])
-                    .addTo(map)
-                    .bindPopup(
-                        "<div style='color:black'>" +
-                        "<b>" + evento.nome + "</b><br>" +
-                        "📍 " + parseFloat(evento.distancia).toFixed(2) + " km<br><br>" +
-                        "<a href='" + evento.url_compra + "' target='_blank'>Comprar</a><br><br>" +
-                        "<button onclick='fazerCheckin(" + evento.id_evento + ")'>Check-in</button><br><br>" +
-                        "<button onclick='avaliarEvento(" + evento.id_evento + ")'>Avaliar</button>" +
-                        "</div>"
-                    );
+                    item.className = "sugestao";
+                    item.innerText = nomeCurto;
+
+                    item.onclick = () => {
+                        document.getElementById("localizacao").value = nomeCurto;
+
+                        userLat = parseFloat(local.lat);
+                        userLong = parseFloat(local.lon);
+
+                        sugestoes.innerHTML = "";
+
+                        carregarEventos();
+                    };
+
+                    sugestoes.appendChild(item);
+                });
 
             });
 
+        }, 400);
+    });
+};
+
+// mostrar / esconder mapa
+function toggleMapa() {
+    let mapDiv = document.getElementById("map");
+
+    mapaVisivel = !mapaVisivel;
+
+    if (mapaVisivel) {
+        mapDiv.classList.remove("hidden");
+
+        if (!map) {
+            map = L.map('map').setView([userLat, userLong], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+        }
+
+        atualizarMapa();
+    } else {
+        mapDiv.classList.add("hidden");
+    }
+}
+
+// buscar pelo botão
+function buscarLocalizacao() {
+    let lugar = document.getElementById("localizacao").value;
+
+    if (!lugar) {
+        carregarEventos();
+        return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${lugar}`)
+    .then(res => res.json())
+    .then(data => {
+        if (data.length > 0) {
+            userLat = parseFloat(data[0].lat);
+            userLong = parseFloat(data[0].lon);
+
+            carregarEventos();
+        } else {
+            alert("Localização não encontrada");
+        }
+    });
+}
+
+// limpar markers
+function limparMapa() {
+    if (!map) return;
+
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+}
+
+// atualizar mapa
+function atualizarMapa() {
+    if (!map) return;
+
+    limparMapa();
+
+    map.setView([userLat, userLong], 13);
+
+    if (userMarker) {
+        map.removeLayer(userMarker);
+    }
+
+    userMarker = L.marker([userLat, userLong]).addTo(map)
+        .bindPopup('Você está aqui!')
+        .openPopup();
+
+    fetchEventos(true);
+}
+
+// carregar lista
+function carregarEventos() {
+    fetchEventos(false);
+}
+
+// buscar eventos
+function fetchEventos(atualizarMapaFlag) {
+
+    let raio = document.getElementById("raio").value;
+
+    fetch(`../controllers/buscar_eventos.php?lat=${userLat}&long=${userLong}&raio=${raio}`)
+    .then(res => res.json())
+    .then(data => {
+
+        let lista = document.getElementById("lista-eventos");
+        lista.innerHTML = "";
+
+        data.forEach(evento => {
+
+            lista.innerHTML += `
+                <div class="evento-card">
+                    <h3>${evento.nome}</h3>
+                    <p>📏 ${parseFloat(evento.distancia).toFixed(2)} km</p>
+
+                    <div class="acoes">
+                        <a href="${evento.url_compra}" target="_blank">🎟 Comprar</a>
+                        <a href="../controllers/checkin.php?id_evento=${evento.id_evento}&lat=${userLat}&long=${userLong}">📍 Check-in</a>
+                        <a href="../views/avaliar.php?id_evento=${evento.id_evento}">⭐ Avaliar</a>
+                    </div>
+                </div>
+            `;
         });
 
-    }, function() {
-        alert("Permita a localização para usar o mapa!");
-    });
+        if (data.length === 0) {
+            lista.innerHTML = "<p>Nenhum evento encontrado.</p>";
+        }
 
-}
+        if (mapaVisivel && atualizarMapaFlag) {
+            data.forEach(evento => {
+                let marker = L.marker([evento.latitude_local, evento.longitude_local]).addTo(map)
+                    .bindPopup(`<b>${evento.nome}</b>`);
 
-// CHECK-IN
-function fazerCheckin(id_evento) {
-
-    navigator.geolocation.getCurrentPosition(function(position) {
-
-        let lat = position.coords.latitude;
-        let long = position.coords.longitude;
-
-        fetch(`../controllers/checkin.php?id_evento=${id_evento}&lat=${lat}&long=${long}`)
-        .then(response => response.text())
-        .then(msg => alert(msg));
+                markers.push(marker);
+            });
+        }
 
     });
-
 }
-
-// AVALIAÇÃO
-function avaliarEvento(id_evento) {
-
-    let nota = prompt("Dê uma nota de 1 a 5:");
-    let comentario = prompt("Comentário:");
-
-    fetch(`../controllers/avaliar.php?id_evento=${id_evento}&nota=${nota}&comentario=${comentario}`)
-    .then(response => response.text())
-    .then(msg => alert(msg));
-
-}
-
 </script>
 
 </body>
