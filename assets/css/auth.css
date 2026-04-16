@@ -1,0 +1,27 @@
+/* LOGIN */
+body.login-page {
+    background: url('../img/background_saturn.jpg') no-repeat center center;
+    background-size: cover;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* PERFIL */
+body.perfil-page {
+    background: url('../img/background_show.jpg') no-repeat center center;
+    background-size: cover;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* info perfil */
+.info {
+    text-align: left;
+    margin-bottom: 20px;
+}

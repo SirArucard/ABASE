@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <title>ABase</title>
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
 
 </head>
 

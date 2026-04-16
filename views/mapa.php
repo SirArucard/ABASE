@@ -13,7 +13,9 @@ if (!isset($_SESSION['id_usuario'])) {
     <meta charset="UTF-8">
     <title>Mapa - ABase</title>
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/mapa.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
@@ -22,26 +24,35 @@ if (!isset($_SESSION['id_usuario'])) {
 <div class="map-container">
 
     <div class="topo">
-<div class="topo-header">
-    <button onclick="window.location.href='perfil.php'" class="btn-voltar" title="Voltar">
-    ←
-</button>
 
-    <h2>Eventos Próximos</h2>
-</div>
-    <div class="filtro">
-        <div class="input-local">
-            <input type="text" id="localizacao" placeholder="Digite sua localização">
-            <div id="sugestoes"></div>
+        <div class="topo-header">
+            <button onclick="window.location.href='perfil.php'" class="btn-voltar">←</button>
+            <h2>Eventos Próximos</h2>
         </div>
 
-        <input type="number" id="raio" placeholder="km" value="10">
-        <button onclick="buscarLocalizacao()">Buscar</button>
+        <div class="filtro">
+            <div class="input-local">
+                <input type="text" id="localizacao" placeholder="Digite sua localização">
+                <div id="sugestoes"></div>
+            </div>
+
+            <input type="number" id="raio" placeholder="km" value="10">
+            <button onclick="buscarLocalizacao()">Buscar</button>
+        </div>
+
+        <button onclick="toggleMapa()" class="btn-mapa">🗺 Mostrar mapa</button>
+
     </div>
 
-    <button onclick="toggleMapa()" class="btn-mapa">🗺 Mostrar mapa</button>
-
-</div>
+    <!-- MODAL -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <p id="modal-text"></p>
+            <div class="modal-actions">
+                <button onclick="fecharModal()">OK</button>
+            </div>
+        </div>
+    </div>
 
     <!-- LISTA -->
     <div id="lista-eventos"></div>
@@ -62,22 +73,17 @@ let userMarker;
 let mapaVisivel = false;
 let timeout = null;
 
-// inicializa depois que carregar DOM
 window.onload = function() {
 
-    // pega localização inicial
     navigator.geolocation.getCurrentPosition(function(position) {
         userLat = position.coords.latitude;
         userLong = position.coords.longitude;
-
         carregarEventos();
     });
 
-    // autocomplete
     document.getElementById("localizacao").addEventListener("input", function() {
 
         clearTimeout(timeout);
-
         let query = this.value;
 
         if (query.length < 3) {
@@ -109,7 +115,6 @@ window.onload = function() {
                         userLong = parseFloat(local.lon);
 
                         sugestoes.innerHTML = "";
-
                         carregarEventos();
                     };
 
@@ -122,7 +127,25 @@ window.onload = function() {
     });
 };
 
-// mostrar / esconder mapa
+// MODAL
+function abrirModal(texto) {
+    const modal = document.getElementById("modal");
+    const textoEl = document.getElementById("modal-text");
+
+    if (!modal || !textoEl) {
+        console.error("Modal não encontrado");
+        return;
+    }
+
+    textoEl.innerText = texto;
+    modal.classList.remove("hidden");
+}
+
+function fecharModal() {
+    document.getElementById("modal").classList.add("hidden");
+}
+
+// MAPA
 function toggleMapa() {
     let mapDiv = document.getElementById("map");
 
@@ -145,7 +168,6 @@ function toggleMapa() {
     }
 }
 
-// buscar pelo botão
 function buscarLocalizacao() {
     let lugar = document.getElementById("localizacao").value;
 
@@ -160,15 +182,13 @@ function buscarLocalizacao() {
         if (data.length > 0) {
             userLat = parseFloat(data[0].lat);
             userLong = parseFloat(data[0].lon);
-
             carregarEventos();
         } else {
-            alert("Localização não encontrada");
+            abrirModal("Localização não encontrada");
         }
     });
 }
 
-// limpar markers
 function limparMapa() {
     if (!map) return;
 
@@ -176,7 +196,6 @@ function limparMapa() {
     markers = [];
 }
 
-// atualizar mapa
 function atualizarMapa() {
     if (!map) return;
 
@@ -195,12 +214,10 @@ function atualizarMapa() {
     fetchEventos(true);
 }
 
-// carregar lista
 function carregarEventos() {
     fetchEventos(false);
 }
 
-// buscar eventos
 function fetchEventos(atualizarMapaFlag) {
 
     let raio = document.getElementById("raio").value;
@@ -215,17 +232,23 @@ function fetchEventos(atualizarMapaFlag) {
         data.forEach(evento => {
 
             lista.innerHTML += `
-                <div class="evento-card">
-                    <h3>${evento.nome}</h3>
-                    <p>📏 ${parseFloat(evento.distancia).toFixed(2)} km</p>
+<div class="evento-card">
+    <h3>${evento.nome}</h3>
+    <p>📏 ${parseFloat(evento.distancia).toFixed(2)} km</p>
 
-                    <div class="acoes">
-                        <a href="${evento.url_compra}" target="_blank">🎟 Comprar</a>
-                        <a href="../controllers/checkin.php?id_evento=${evento.id_evento}&lat=${userLat}&long=${userLong}">📍 Check-in</a>
-                        <a href="../views/avaliar.php?id_evento=${evento.id_evento}">⭐ Avaliar</a>
-                    </div>
-                </div>
-            `;
+    <div class="acoes">
+        <a href="${evento.url_compra}" target="_blank">🎟 Ingresso</a>
+
+        <button onclick="irDetalhes(${evento.id_evento})">
+            📄 Detalhes
+        </button>
+
+        <button onclick="comprarEvento(${evento.id_evento})">
+            ✅ Já comprei
+        </button>
+    </div>
+</div>
+`;
         });
 
         if (data.length === 0) {
@@ -242,6 +265,28 @@ function fetchEventos(atualizarMapaFlag) {
         }
 
     });
+}
+// detalhes
+function irDetalhes(id) {
+    window.location.href = `detalhes_evento.php?id=${id}`;
+}
+
+// COMPRA
+function comprarEvento(id_evento) {
+    fetch(`../controllers/comprar_evento.php?id_evento=${id_evento}`)
+        .then(res => res.text())
+        .then(msg => {
+            console.log("Resposta:", msg);
+
+            if (!msg || msg.trim() === "") {
+                msg = "⚠️ Sem resposta do servidor.";
+            }
+
+            abrirModal(msg);
+        })
+        .catch(() => {
+            abrirModal("❌ Erro ao conectar com servidor.");
+        });
 }
 </script>
 
