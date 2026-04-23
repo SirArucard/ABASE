@@ -8,6 +8,6 @@ if ($_SESSION['tipo_usuario'] != 'admin') {
 
 $id = $_GET['id'];
 
-$sql = "DELETE FROM usuario WHERE id_usuario = $id";
+$sql = "UPDATE usuario SET status_aprov = 1 WHERE id_usuario = $id";
 
 $conn->query($sql);

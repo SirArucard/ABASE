@@ -93,12 +93,14 @@ $resultEventos = $conn->query($sqlEventos);
     <button onclick="window.location.href='mapa.php'">📍 Ver Eventos</button>
 
     <?php if ($user['tipo_usuario'] == 'produtor'): ?>
-        <?php if ($user['status_aprov'] == 1): ?>
-            <button onclick="window.location.href='criar_evento.php'">➕ Criar Evento</button>
-        <?php else: ?>
-            <p style="color: orange;">⏳ Aguardando aprovação</p>
-        <?php endif; ?>
+    <?php if ($user['status_aprov'] == 1): ?>
+        <button onclick="window.location.href='criar_evento.php'">
+            ➕ Criar Evento
+        </button>
+    <?php else: ?>
+        <p style="color: orange;">⏳ Aguardando aprovação</p>
     <?php endif; ?>
+<?php endif; ?>
 
     <button onclick="window.location.href='../index.php'" class="logout">🚪 Sair</button>
 

@@ -1,4 +1,4 @@
-/* container padrão */
+/* container default */
 .container {
     background: rgba(2, 6, 23, 0.8);
     padding: 30px;
@@ -31,7 +31,7 @@
     color: #cbd5f5;
 }
 
-/* ações */
+/* actions */
 .acoes {
     display: flex;
     gap: 10px;
@@ -110,7 +110,7 @@
     line-height: 1.4;
 }
 
-/* BOTÕES */
+/* buttons modal */
 .modal-actions {
     display: flex;
     gap: 10px;

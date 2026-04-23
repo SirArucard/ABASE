@@ -15,7 +15,7 @@
 
     <img src="assets/img/LOGO1.png" class="logo">
     <h1>ABase</h1>
-    <p> Ache os eventos mais próximos de você e aproveite ao máximo sua experiência!</p>
+    <p>Ache os eventos mais próximos de você e aproveite ao máximo sua experiência!</p>
 
     <!-- LOGIN -->
     <div id="loginForm">
@@ -41,18 +41,23 @@
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" id="senha" name="senha" placeholder="Senha" required>
             <input type="text" id="telefone" name="telefone" placeholder="Telefone" maxlength="11">
-            <input type="date" name="data_nascimento" placeholder="Data de Nascimento">
+            <input type="date" name="data_nascimento">
+
             <div id="campo_extra"></div>
 
+            <!-- ENDEREÇO -->
             <h4>Endereço (opcional)</h4>
             <button type="button" onclick="toggleEndereco()">+ Adicionar endereço</button>
+
             <div id="endereco" class="hidden">
-            <input type="text" name="rua" placeholder="Rua">
-            <input type="text" name="numero" placeholder="Número">
-            <input type="text" name="complemento" placeholder="Complemento">
-            <input type="text" name="cep" placeholder="CEP">
-            <input type="text" name="bairro" placeholder="Bairro">
-            <input type="text" name="cidade" placeholder="Cidade">
+                <input type="text" name="rua" placeholder="Rua">
+                <input type="text" name="numero" placeholder="Número">
+                <input type="text" name="complemento" placeholder="Complemento">
+                <input type="text" name="cep" placeholder="CEP">
+                <input type="text" name="bairro" placeholder="Bairro">
+                <input type="text" name="cidade" placeholder="Cidade">
+            </div>
+
             <button type="submit">Cadastrar</button>
         </form>
 
@@ -144,24 +149,24 @@ function validarFormulario() {
     let telefone = document.getElementById("telefone").value;
 
     if (!validarSenha(senha)) {
-        abrirModal("Senha fraca (mín 8 caracteres com número e letra)");
+        abrirModal("Senha deve ter no mínimo 8 caracteres com letra e número");
         return false;
     }
 
     if (!validarTelefone(telefone)) {
-        abrirModal("Telefone inválido (11 números)");
+        abrirModal("Telefone deve conter DDD + 9 dígitos (11 números)");
         return false;
     }
 
     if (!validarDataNascimento()) {
-        abrirModal("Data inválida");
+        abrirModal("Data de nascimento inválida");
         return false;
     }
 
     if (tipo === "cliente") {
         let cpf = document.querySelector("[name='cpf']").value;
         if (!validarCPF(cpf)) {
-            abrirModal("CPF inválido");
+            abrirModal("CPF inválido (11 números)");
             return false;
         }
     }
@@ -169,7 +174,7 @@ function validarFormulario() {
     if (tipo === "produtor") {
         let cnpj = document.querySelector("[name='cnpj']").value;
         if (!validarCNPJ(cnpj)) {
-            abrirModal("CNPJ inválido");
+            abrirModal("CNPJ inválido (14 números)");
             return false;
         }
     }
@@ -177,7 +182,7 @@ function validarFormulario() {
     return true;
 }
 
-// ================= PEGAR ERROS DA URL =================
+// ================= URL PARAMS =================
 const params = new URLSearchParams(window.location.search);
 
 const erro = params.get("erro");

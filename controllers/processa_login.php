@@ -34,23 +34,20 @@ if ($result && $result->num_rows > 0) {
 
         // ✅ cria sessão
         $_SESSION['id_usuario'] = $user['id_usuario'];
-$_SESSION['tipo_usuario'] = $user['tipo_usuario'];
+        $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
 
-// redirecionamento por tipo
-if ($user['tipo_usuario'] == 'admin') {
-    header("Location: ../views/admin.php");
-} else {
-    header("Location: ../views/perfil.php");
-}
-exit();
-
+        // redirecionamento por tipo
+        if ($user['tipo_usuario'] == 'admin') {
+            header("Location: ../views/admin.php");
+        } else {
+            header("Location: ../views/perfil.php");
+        }
+        exit();
     } else {
         header("Location: ../index.php?erro=senha");
         exit();
     }
-
 } else {
     header("Location: ../index.php?erro=usuario");
     exit();
 }
-?>

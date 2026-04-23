@@ -2,19 +2,17 @@
 session_start();
 include("../config/config.php");
 
-// segurança
+// só admin entra
 if (!isset($_SESSION['id_usuario']) || $_SESSION['tipo_usuario'] != 'admin') {
     header("Location: ../index.php");
     exit();
 }
 
-// buscar produtores
-$sql = "
-SELECT u.id_usuario, u.email, p.cnpj, p.razao_social, u.status_aprov
-FROM usuario u
-JOIN usuario_produtor p ON u.id_usuario = p.id_usuario
-WHERE u.tipo_usuario = 'produtor'
-";
+// busca produtores pendentes
+$sql = "SELECT u.id_usuario, u.email, p.cnpj, p.razao_social
+        FROM usuario u
+        JOIN usuario_produtor p ON u.id_usuario = p.id_usuario
+        WHERE u.tipo_usuario = 'produtor' AND u.status_aprov = 0";
 
 $result = $conn->query($sql);
 ?>
@@ -23,53 +21,79 @@ $result = $conn->query($sql);
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin</title>
+    <title>Admin - ABase</title>
 
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 
-<body class="perfil-page">
+<body class="admin-page">
 
-<div class="container">
+<div class="admin-container">
 
-    <h1>🛠 Painel Admin</h1>
-
-    <?php while ($p = $result->fetch_assoc()): ?>
-
-        <div class="evento-card">
-            <h3><?= $p['razao_social'] ?></h3>
-            <p><?= $p['email'] ?></p>
-            <p><?= $p['cnpj'] ?></p>
-
-            <div class="acoes">
-
-                <?php if ($p['status_aprov'] == 0): ?>
-
-                    <button onclick="aprovar(<?= $p['id_usuario'] ?>)">✅ Aprovar</button>
-                    <button onclick="recusar(<?= $p['id_usuario'] ?>)">❌ Recusar</button>
-
-                <?php else: ?>
-                    <span style="color: green;">✔ Aprovado</span>
-                <?php endif; ?>
-
-            </div>
+    <div class="topo">
+        <div class="topo-header">
+            <button onclick="window.location.href='perfil.php'" class="btn-voltar">←</button>
+            <h2>Painel do Administrador</h2>
         </div>
+    </div>
 
-    <?php endwhile; ?>
+    <div class="lista-produtores">
+
+        <?php if ($result->num_rows > 0): ?>
+            <?php while ($prod = $result->fetch_assoc()): ?>
+
+                <div class="produtor-card">
+                    <h3><?= $prod['razao_social'] ?></h3>
+                    <p>Email: <?= $prod['email'] ?></p>
+                    <p>CNPJ: <?= $prod['cnpj'] ?></p>
+
+                    <div class="acoes">
+                        <button class="btn btn-ver"
+                            onclick="verDados(<?= $prod['id_usuario'] ?>)">
+                            Verificar dados
+                        </button>
+
+                        <button class="btn btn-aprovar"
+                            onclick="aprovar(<?= $prod['id_usuario'] ?>)">
+                            Aprovar
+                        </button>
+
+                        <button class="btn btn-recusar"
+                            onclick="recusar(<?= $prod['id_usuario'] ?>)">
+                            Recusar
+                        </button>
+                    </div>
+                </div>
+
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p>Nenhum produtor pendente.</p>
+        <?php endif; ?>
+
+    </div>
 
 </div>
 
 <script>
+
 function aprovar(id) {
     fetch(`../controllers/aprovar_produtor.php?id=${id}`)
-    .then(() => location.reload());
+        .then(() => location.reload());
 }
 
 function recusar(id) {
-    fetch(`../controllers/recusar_produtor.php?id=${id}`)
-    .then(() => location.reload());
+    if (confirm("Tem certeza que deseja recusar?")) {
+        fetch(`../controllers/recusar_produtor.php?id=${id}`)
+            .then(() => location.reload());
+    }
 }
+
+function verDados(id) {
+    window.location.href = `detalhes_produtor.php?id=${id}`;
+}
+
 </script>
 
 </body>
