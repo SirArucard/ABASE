@@ -11,27 +11,28 @@ $id = $_SESSION['id_usuario'];
 
 $sql = "SELECT * FROM usuario WHERE id_usuario = $id";
 $result = $conn->query($sql);
-
-if ($result->num_rows == 0) {
-    echo "Usuário não encontrado.";
-    exit();
-}
-
 $user = $result->fetch_assoc();
 
+/* EVENTOS DO USUÁRIO */
 $sqlEventos = "
 SELECT e.*, ue.checkin_realizado
 FROM usuario_evento ue
 JOIN evento e ON e.id_evento = ue.id_evento
 WHERE ue.id_usuario = $id
 ";
-
 $resultEventos = $conn->query($sqlEventos);
+
+/* EVENTOS DO PRODUTOR */
+$resultProdutor = null;
+
+if ($user['tipo_usuario'] == 'produtor') {
+    $sqlProdutor = "SELECT * FROM evento WHERE id_produtor = $id ORDER BY id_evento DESC";
+    $resultProdutor = $conn->query($sqlProdutor);
+}
 ?>
 
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <title>Perfil - ABase</title>
@@ -46,148 +47,112 @@ $resultEventos = $conn->query($sqlEventos);
 
 <div class="container">
 
-    <h1>👤 Meu Perfil</h1>
+    <h1>Meu Perfil</h1>
+
+    <?php if (isset($_GET['sucesso']) && $_GET['sucesso'] == 'evento_editado'): ?>
+        <p style="color:#22c55e; margin-bottom:10px;">Evento atualizado com sucesso!</p>
+    <?php endif; ?>
 
     <div class="info">
         <p><b>Email:</b> <?= $user['email'] ?></p>
         <p><b>Tipo:</b> <?= $user['tipo_usuario'] ?></p>
         <p><b>Telefone:</b> <?= $user['telefone'] ?? 'Não informado' ?></p>
-        <p><b>Data de Nascimento:</b> <?= $user['data_nascimento'] ?? 'Não informado' ?></p>
-        <p><b>Cadastro:</b> <?= $user['data_cadastro'] ?></p>
+        <p><b>Nascimento:</b> <?= $user['data_nascimento'] ?? 'Não informado' ?></p>
     </div>
 
-    <h2>🎟 Meus Eventos</h2>
+    <h2>Meus Eventos</h2>
 
+    <div class="grid-eventos">
     <?php while ($evento = $resultEventos->fetch_assoc()): ?>
-
         <div class="evento-card">
 
             <h3><?= $evento['nome'] ?></h3>
 
-            <div class="acoes">
+            <div class="evento-acoes">
 
-                <a href="<?= $evento['url_compra'] ?>" target="_blank">
-                    🎟 Ingresso
+                <a href="<?= $evento['url_compra'] ?>" target="_blank" class="btn btn-success">
+                    Ingresso
                 </a>
 
                 <?php if (!$evento['checkin_realizado']): ?>
-                    <button onclick="fazerCheckin(<?= $evento['id_evento'] ?>)">
-                        📍 Check-in
+                    <button class="btn btn-warning" onclick="fazerCheckin(<?= $evento['id_evento'] ?>)">
+                        Check-in
                     </button>
                 <?php else: ?>
-                    <a href="../views/avaliar.php?id_evento=<?= $evento['id_evento'] ?>">
-                        ⭐ Avaliar
+                    <a href="../views/avaliar.php?id_evento=<?= $evento['id_evento'] ?>" class="btn btn-primary">
+                        Avaliar
                     </a>
                 <?php endif; ?>
 
-                <button onclick="removerEvento(<?= $evento['id_evento'] ?>, '<?= $evento['data_evento'] ?>')">
-                    🗑
+                <button class="btn btn-primary" onclick="removerEvento(<?= $evento['id_evento'] ?>)">
+                    Remover
                 </button>
 
             </div>
 
         </div>
-
     <?php endwhile; ?>
-
-    <button onclick="window.location.href='mapa.php'">📍 Ver Eventos</button>
+    </div>
 
     <?php if ($user['tipo_usuario'] == 'produtor'): ?>
-    <?php if ($user['status_aprov'] == 1): ?>
-        <button onclick="window.location.href='criar_evento.php'">
-            ➕ Criar Evento
-        </button>
-    <?php else: ?>
-        <p style="color: orange;">⏳ Aguardando aprovação</p>
-    <?php endif; ?>
-<?php endif; ?>
+        <h2>Meus Eventos Criados</h2>
 
-    <button onclick="window.location.href='../index.php'" class="logout">🚪 Sair</button>
+        <div class="grid-eventos">
+        <?php if ($resultProdutor && $resultProdutor->num_rows > 0): ?>
+            <?php while ($evento = $resultProdutor->fetch_assoc()): ?>
+                <div class="evento-card">
 
-</div>
+                    <h3><?= $evento['nome'] ?></h3>
+                    <p><?= $evento['detalhes'] ?></p>
 
-<!-- MODAL -->
-<div id="modal" class="modal hidden">
-    <div class="modal-content">
+                    <div class="evento-acoes">
 
-        <p id="modal-text"></p>
+                        <a href="<?= $evento['url_compra'] ?>" target="_blank" class="btn btn-success">
+                            Ver Ingresso
+                        </a>
 
-        <div class="modal-actions">
-            <button id="modal-confirm" class="btn-confirm">Confirmar</button>
-            <button onclick="fecharModal()" class="btn-cancel">Cancelar</button>
+                        <button class="btn btn-primary" onclick="editarEvento(<?= $evento['id_evento'] ?>)">
+                            Editar
+                        </button>
+
+                    </div>
+
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p>Você ainda não criou eventos.</p>
+        <?php endif; ?>
         </div>
+    <?php endif; ?>
 
-    </div>
+    <button onclick="window.location.href='mapa.php'" class="btn btn-primary">Ver Eventos</button>
+
+    <?php if ($user['tipo_usuario'] == 'produtor' && $user['status_aprov'] == 1): ?>
+        <button onclick="window.location.href='criar_evento.php'" class="btn btn-success">
+            Criar Evento
+        </button>
+    <?php endif; ?>
+
+    <button onclick="window.location.href='../index.php'" class="btn btn-warning">
+        Sair
+    </button>
+
 </div>
 
 <script>
-
-let acaoConfirmar = null;
-
-// garante que o DOM carregou
-window.onload = function() {
-
-    document.getElementById("modal-confirm").onclick = function() {
-        if (acaoConfirmar) {
-            acaoConfirmar();
-        }
-        fecharModal();
-    };
-
-};
-
-// CHECK-IN
-function fazerCheckin(id_evento) {
-    fetch(`../controllers/checkin.php?id_evento=${id_evento}`)
-    .then(() => {
-
-        abrirModal("✅ Check-in realizado!");
-
-        setTimeout(() => {
-            location.reload();
-        }, 1500);
-
-    });
+function fazerCheckin(id) {
+    fetch(`../controllers/checkin.php?id_evento=${id}`)
+    .then(() => location.reload());
 }
 
-// REMOVER EVENTO
-function removerEvento(id_evento, data_evento) {
-
-    let hoje = new Date();
-    let dataEvento = new Date(data_evento);
-
-    let mensagem = "Tem certeza que deseja remover este evento?";
-
-    if (dataEvento > hoje) {
-        mensagem = "⚠️ Esse evento ainda não ocorreu!\nDeseja remover mesmo assim?";
-    }
-
-    abrirModal(mensagem, () => {
-
-        fetch(`../controllers/remover_evento_usuario.php?id_evento=${id_evento}`)
-        .then(() => {
-            location.reload();
-        });
-
-    });
+function removerEvento(id) {
+    fetch(`../controllers/remover_evento_usuario.php?id_evento=${id}`)
+    .then(() => location.reload());
 }
 
-// MODAL
-function abrirModal(texto, callbackConfirmar = null) {
-    document.getElementById("modal-text").innerText = texto;
-    document.getElementById("modal").classList.remove("hidden");
-
-    acaoConfirmar = callbackConfirmar;
-
-    document.getElementById("modal-confirm").style.display =
-        callbackConfirmar ? "block" : "none";
+function editarEvento(id) {
+    window.location.href = `editar_evento.php?id=${id}`;
 }
-
-function fecharModal() {
-    document.getElementById("modal").classList.add("hidden");
-    acaoConfirmar = null;
-}
-
 </script>
 
 </body>

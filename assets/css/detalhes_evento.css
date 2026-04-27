@@ -1,0 +1,92 @@
+body.detalhes-page {
+    background: #020617;
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* CONTAINER */
+.detalhes-container {
+    width: 100%;
+    max-width: 700px;
+
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(10px);
+
+    border-radius: 20px;
+    padding: 25px;
+
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+/* IMAGEM */
+.evento-imagem {
+    width: 100%;
+    height: 250px;
+
+    background-size: cover;
+    background-position: center;
+
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+/* TÍTULO */
+.evento-titulo {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* INFO */
+.evento-info {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+/* DESCRIÇÃO */
+.evento-descricao {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #cbd5f5;
+    margin-bottom: 20px;
+}
+
+/* AÇÕES */
+.evento-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.evento-acoes > * {
+    flex: 1;
+}
+
+.btn-ingresso {
+    background: rgba(34,197,94,0.15);
+    color: #22c55e;
+}
+
+/* DETALHES */
+.btn-detalhe {
+    background: rgba(59,130,246,0.15);
+    color: #3b82f6;
+}
+
+/* JÁ COMPREI */
+.btn-ja-comprei {
+    background: rgba(245,158,11,0.15);
+    color: #f59e0b;
+}
+
+#mapa-evento {
+    width: 100%;
+    height: 250px;
+    border-radius: 15px;
+    margin: 15px 0;
+}

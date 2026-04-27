@@ -25,36 +25,73 @@ $evento = $result->fetch_assoc();
     <meta charset="UTF-8">
     <title>Detalhes do Evento</title>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/detalhes_evento.css">
 </head>
 
-<body class="perfil-page">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<div class="container">
+<body class="detalhes-page">
 
-    <h1><?= $evento['nome'] ?></h1>
+<div class="detalhes-container">
+    
+    <div class="evento-imagem"
+        style="background-image: url('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4');">
+    </div>
 
-    <p><b>📅 Data:</b> <?= $evento['data_evento'] ?></p>
-    <p><b>⏰ Hora:</b> <?= $evento['hora_inicio'] ?></p>
+    <!-- TÍTULO -->
+    <h1 class="evento-titulo"><?= $evento['nome'] ?></h1>
 
-    <p><b>📍 Localização:</b><br>
-        Lat: <?= $evento['latitude_local'] ?><br>
-        Long: <?= $evento['longitude_local'] ?>
-    </p>
+    <!-- INFO -->
+    <p class="evento-info">📅 <?= $evento['data_evento'] ?> às <?= $evento['hora_inicio'] ?></p>
 
-    <p><b>Detalhes:</b><br>
+    <div id="mapa-evento"></div>
+
+    <!-- DESCRIÇÃO -->
+    <p class="evento-descricao">
         <?= nl2br($evento['detalhes']) ?>
     </p>
 
-    <?php if ($evento['url_compra']): ?>
-        <a href="<?= $evento['url_compra'] ?>" target="_blank">🎟 Comprar Ingresso</a>
-    <?php endif; ?>
+    <!-- AÇÕES -->
+    <div class="evento-acoes">
 
-    <br><br>
-    <button onclick="history.back()">⬅ Voltar</button>
+        <?php if ($evento['url_compra']): ?>
+            <a href="<?= $evento['url_compra'] ?>" target="_blank" class="btn btn-ingresso">
+                Ingresso
+            </a>
+        <?php endif; ?>
+
+        
+        <button class="btn btn-ja-comprei">
+            Já comprei
+        </button>
+
+        <button class="btn btn-detalhe" onclick="history.back()">
+            Voltar
+        </button>
+
+    </div>
 
 </div>
+
+<script>
+
+let lat = <?= $evento['latitude_local'] ?>;
+let lng = <?= $evento['longitude_local'] ?>;
+
+let map = L.map('mapa-evento').setView([lat, lng], 15);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+L.marker([lat, lng])
+    .addTo(map)
+    .openPopup();
+
+</script>
 
 </body>
 </html>

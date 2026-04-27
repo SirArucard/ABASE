@@ -1,111 +1,15 @@
 body.criar-evento-page {
     background: #020617;
-    font-family: 'Segoe UI', sans-serif;
-    color: white;
 }
 
-/* container default */
+/* container maior */
 .container {
-    width: 100%;
     max-width: 500px;
     margin: 80px auto;
-    padding: 30px;
-
-    background: rgba(2, 6, 23, 0.9);
-    border-radius: 15px;
-
-    box-shadow: 0 0 25px rgba(0,0,0,0.5);
-}
-
-/* title */
-.container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* inputs */
-.container input,
-.container textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-
-    border-radius: 8px;
-    border: none;
-
-    background: rgba(255,255,255,0.08);
-    color: white;
 }
 
 /* textarea */
-.container textarea {
+textarea {
     resize: none;
     height: 100px;
-}
-
-/* button */
-.container button {
-    width: 100%;
-    padding: 12px;
-
-    border: none;
-    border-radius: 10px;
-
-    background: linear-gradient(45deg, #22c55e, #16a34a);
-    color: white;
-
-    font-weight: bold;
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.container button:hover {
-    transform: scale(1.03);
-}
-
-/* back butt */
-.btn-voltar {
-    margin-bottom: 15px;
-    display: inline-block;
-
-    background: rgba(255,255,255,0.1);
-    padding: 8px 12px;
-    border-radius: 8px;
-
-    cursor: pointer;
-}
-
-.btn-voltar:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-/* modal */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    z-index: 9999;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.modal-content {
-    background: #020617;
-    padding: 25px;
-    border-radius: 15px;
-    text-align: center;
-
-    width: 300px;
-}
-
-.modal-content button {
-    margin-top: 10px;
 }

@@ -22,7 +22,7 @@
         <form action="/abase/controllers/processa_login.php" method="POST">
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="senha" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
+            <button type="submit" class="btn btn-full">Entrar</button>
         </form>
 
         <div class="switch" onclick="toggleForm()">Não tem conta? Cadastre-se</div>
@@ -58,7 +58,7 @@
                 <input type="text" name="cidade" placeholder="Cidade">
             </div>
 
-            <button type="submit">Cadastrar</button>
+            <button type="submit" class="btn-entrar btn-full">Cadastrar</button>
         </form>
 
         <div class="switch" onclick="toggleForm()">Já tem conta? Login</div>

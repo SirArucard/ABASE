@@ -10,8 +10,8 @@ body {
     color: white;
 }
 
-/* inputs */
-input, select {
+/* INPUTS PADRÃO */
+input, select, textarea {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
@@ -20,15 +20,14 @@ input, select {
     outline: none;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 5px #22c55e;
 }
 
-/* button */
+/* BOTÃO BASE */
 button {
-    width: 100%;
     padding: 10px;
-    margin-top: 15px;
+    margin-top: 10px;
 
     border: none;
     border-radius: 8px;
@@ -37,14 +36,14 @@ button {
     color: white;
 
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.2s;
 }
 
 button:hover {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
-/* util */
+/* UTIL */
 .hidden {
-    display: none;
+    display: none !important;
 }

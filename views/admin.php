@@ -34,7 +34,7 @@ $result = $conn->query($sql);
 
     <div class="topo">
         <div class="topo-header">
-            <button onclick="window.location.href='perfil.php'" class="btn-voltar">←</button>
+            <button onclick="window.location.href='../index.php'" class="btn-voltar">←</button>
             <h2>Painel do Administrador</h2>
         </div>
     </div>

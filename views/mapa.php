@@ -233,20 +233,27 @@ function fetchEventos(atualizarMapaFlag) {
 
             lista.innerHTML += `
 <div class="evento-card">
-    <h3>${evento.nome}</h3>
-    <p>📏 ${parseFloat(evento.distancia).toFixed(2)} km</p>
+
+    <div class="evento-header">
+        <h3>${evento.nome}</h3>
+        <span class="distancia">${parseFloat(evento.distancia).toFixed(2)} km</span>
+    </div>
 
     <div class="acoes">
-        <a href="${evento.url_compra}" target="_blank">🎟 Ingresso</a>
 
-        <button onclick="irDetalhes(${evento.id_evento})">
-            📄 Detalhes
-        </button>
+    <a href="${evento.url_compra}" target="_blank" class="btn btn-ingresso">
+        Ingresso
+    </a>
 
-        <button onclick="comprarEvento(${evento.id_evento})">
-            ✅ Já comprei
-        </button>
-    </div>
+    <button class="btn btn-detalhe" onclick="irDetalhes(${evento.id_evento})">
+        Detalhes
+    </button>
+
+    <button class="btn btn-ja-comprei" onclick="comprarEvento(${evento.id_evento})">
+        Já comprei
+    </button>
+
+</div>
 </div>
 `;
         });

@@ -1,6 +1,11 @@
 <?php
 session_start();
 
+$id_produtor = $_SESSION['id_usuario'];
+
+$sql = "INSERT INTO eventos (nome, detalhes, latitude_local, longitude_local, url_compra, id_produtor)
+VALUES ('$nome', '$detalhes', '$lat', '$long', '$url', '$id_produtor')";
+
 if (!isset($_SESSION['id_usuario']) || $_SESSION['tipo_usuario'] != 'produtor') {
     header("Location: ../index.php");
     exit();
